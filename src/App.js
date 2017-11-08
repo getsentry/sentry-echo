@@ -14,12 +14,12 @@ const platforms = [
   'csharp',
   'elixir',
   'go',
-//  'java',
-//  'objc',
-//  'php',
-//  'perl',
-//  'c',
-//  'other',
+  'java',
+  'objc',
+  'php',
+  'perl',
+  'c',
+  'other',
 ];
 
 let userLocation = null;
@@ -103,6 +103,12 @@ const instrumentGroups = [
   'Bass Line',
 ];
 
+const defaultGrouping = [
+  [ 'javascript', 'node', 'python', 'ruby' ],
+  [ 'csharp', 'elixir', 'go', 'php' ],
+  [ 'java', 'objc', 'c', 'other' ],
+];
+
 const heading = <header>
   <div className="logo">
     <h1>Sentry</h1>
@@ -116,7 +122,7 @@ const heading = <header>
 
 class PlatformSequence extends Component {
   render() {
-    return <li>
+    return <li className="platform">
       <span className={classNames('platform-icon', this.props.platform)} />
       <span className="note-indicator" />
 
@@ -126,10 +132,23 @@ class PlatformSequence extends Component {
 
 
 class App extends Component {
-  render() {
+  constructor() {
+    super()
 
-    const platList = platforms
-      .map(p => <li className={classNames('platform', p)}></li>);
+    const ordering = lodash.cloneDeep(defaultGrouping);
+    this.state = { ordering };
+  }
+
+  render() {
+    const sequencerList = this.state.ordering.map((items, i) => {
+      const heading = <li className="instrument-heading">
+        {instrumentGroups[i]}
+      </li>;
+
+      const sequencers = items.map(p => <PlatformSequence platform={p} />);
+
+      return [ heading, sequencers ];
+    })
 
     return <div id="sentry_echo">
       {heading}
@@ -139,9 +158,7 @@ class App extends Component {
         </span>
 
         <ul className="sequencers">
-          <li className="instrument-heading">Bass Line</li>
-
-          {platforms.map(p => <PlatformSequence platform={p} />)}
+          {sequencerList}
         </ul>
       </div>
     </div>;

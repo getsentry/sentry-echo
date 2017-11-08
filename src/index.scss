@@ -4,9 +4,12 @@
 
 @import './_platforms';
 
-html, body, #root, #sentry_echo {
-    min-height: 100%;
+html, body, #root {
     height: 100%;
+}
+
+body, #root, #sentry_echo {
+    min-height: 100%;
     margin: 0;
     padding: 0;
 }
@@ -71,8 +74,8 @@ header {
     position: relative;
     flex-grow: 1;
     display: flex;
-    align-items: center;
     justify-content: center;
+    padding-top: 80px;
 }
 
 .sequencers {
@@ -85,13 +88,32 @@ header {
     }
 }
 
-.note-indicator {
-    width: 8px;
-    height: 100%;
-    background: red;
-
+.platform {
+    display: flex;
+    width: 800px;
 }
 
+.instrument-heading {
+    display: flex;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    align-items: center;
+    padding: 4px 0;
+
+    &:after {
+        content: '';
+        border-bottom: 1px solid #333;
+        flex-grow: 1;
+        margin-left: 10px;
+    }
+}
+
+.note-indicator {
+    display: block;
+    width: 4px;
+    background: #353042;
+    margin-left: 6px;
+}
 
 .waiting-sequence {
     position: absolute;
