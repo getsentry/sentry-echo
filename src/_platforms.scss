@@ -1,0 +1,74 @@
+.platform-icon:before {
+    height: 60px;
+    width: 60px;
+    font-family: 'platformicons';
+    color: #fff;
+    font-size: 38px;
+    -webkit-font-smoothing: antialiased;
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    text-align: center;
+    line-height: 58px;
+}
+
+.c:before {
+    content: 'C';
+    font-family: Raleway;
+    font-weight: 300;
+    background: #a9b9cb;
+    line-height: 60px;
+}
+.cocoa:before {
+    content: '\e60a';
+    background: red;
+}
+.csharp:before {
+    content: '\e60f';
+    background: #0090ff;
+}
+.elixir:before {
+    content: '\e903';
+    background: #4e3fb4;
+}
+.go:before {
+    content: "\e606";
+    background: #fff;
+    color: #000;
+}
+.java:before {
+    content: "\e608";
+    background: #ff8a00;
+}
+.javascript:before {
+    content: "\e600";
+    background: #ffd906;
+}
+.node:before {
+    content: "\e609";
+    background: #8ac655;
+}
+.objc:before {
+    content: "\e60e";
+    background: #02bfd0;
+}
+.php:before {
+    content: "\e601";
+    background: #4F5B93;
+}
+.python:before {
+    content: "\e602";
+    background: #3776ab;
+}
+.ruby:before {
+    content: "\e604";
+    background: #d00202;
+}
+.perl:before {
+    content: "\e901";
+    background: #9d95a4;
+}
+.other:before {
+    content: '\e60a';
+    background: #afafaf;
+}
