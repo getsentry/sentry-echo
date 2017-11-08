@@ -115,6 +115,39 @@ header {
     margin-left: 6px;
 }
 
+.sequence-timeline {
+    overflow: hidden;
+    position: relative;
+    margin-left: 6px;
+    background: rgba(255, 255, 255, 0.01);
+    flex-grow: 1;
+}
+
+.playhead {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-right: 1px solid #6C5FC7;
+    transform: translateX(0);
+    opacity: 0;
+    transition: opacity 300ms;
+
+    &:before {
+        content: '';
+        display: block;
+        position: absolute;
+        width: 10px;
+        left: -10px;
+        height: 100%;
+        background: linear-gradient(90deg, rgba(108, 95, 199, 0), rgba(108, 95, 199, 0.2));
+    }
+
+    &.shown {
+        opacity: 1;
+    }
+}
+
 .waiting-sequence {
     position: absolute;
     top: 20px;

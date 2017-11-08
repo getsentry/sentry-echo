@@ -109,6 +109,46 @@ const defaultGrouping = [
   [ 'java', 'objc', 'c', 'other' ],
 ];
 
+class PlatformSequence extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      sequenceSize:  new Tone.Time('8:0:0'),
+      playheadShown: false,
+      playing:       false,
+    };
+
+    console.log(this.state.sequenceSize.toSeconds())
+
+    this.movePlayhead = this.movePlayhead.bind(this);
+  }
+
+  componentDidMount() {
+    const startPlaying = time => {
+      console.log('Okay now playing!')
+      this.setState({ playheadShown: true, playing: true });
+    };
+
+    Tone.Transport.schedule(
+      t => Tone.Draw.schedule(_ => startPlaying(t), t),
+      this.state.sequenceSize,
+    )
+  }
+
+  render() {
+    return <li className="platform">
+      <span className={classNames('platform-icon', this.props.platform)} />
+      <span className="note-indicator" />
+      <div className="sequence-timeline">
+        <span
+          className={classNames('playhead', { shown: this.state.playheadShown })}
+          ref={e => this.playhead = e} />
+      </div>
+    </li>;
+  }
+}
+
 const heading = <header>
   <div className="logo">
     <h1>Sentry</h1>
@@ -120,17 +160,6 @@ const heading = <header>
   </p>
 </header>;
 
-class PlatformSequence extends Component {
-  render() {
-    return <li className="platform">
-      <span className={classNames('platform-icon', this.props.platform)} />
-      <span className="note-indicator" />
-
-    </li>;
-  }
-}
-
-
 class App extends Component {
   constructor() {
     super()
@@ -141,11 +170,11 @@ class App extends Component {
 
   render() {
     const sequencerList = this.state.ordering.map((items, i) => {
-      const heading = <li className="instrument-heading">
+      const heading = <li key={i} className="instrument-heading">
         {instrumentGroups[i]}
       </li>;
 
-      const sequencers = items.map(p => <PlatformSequence platform={p} />);
+      const sequencers = items.map(p => <PlatformSequence key={p} platform={p} />);
 
       return [ heading, sequencers ];
     })
