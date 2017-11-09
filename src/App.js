@@ -6,7 +6,7 @@ import AnimatedNumber from 'react-animated-number';
 import lodash from 'lodash';
 import './index.scss';
 
-const platforms = [
+let platforms = [
   'javascript',
   'node',
   'python',
@@ -42,54 +42,62 @@ const instrumentGroups = [
 const scale = [ 'C', 'D', 'E', 'F', 'G', 'A', 'B' ];
 
 const defaultGrouping = [
-  [ 'javascript', 'python', ],
-  [ 'go', /* 'csharp', 'elixir' */ ],
-  [ 'java' , 'c', /* 'other' */ ],
+  [ 'javascript', 'python', 'node',  ],
+  [ 'go', 'csharp', 'ruby' ],
+  [ 'java' , 'elixir', 'c', 'other' ],
 ];
+
+// XXX: Disable unused groupings to save on memory
+platforms = lodash.flatten(defaultGrouping);
 
 const synthBank = [
   {
     javascript: new Tone.PluckSynth().toMaster(),
     python: new Tone.PluckSynth().toMaster(),
+    node: new Tone.PluckSynth().toMaster(),
   },
   {
     go: new Tone.MembraneSynth().toMaster(),
+    csharp: new Tone.MembraneSynth().toMaster(),
+    ruby: new Tone.MembraneSynth().toMaster(),
   },
   {
-    java: new Tone.FMSynth().toMaster(),
-    c:    new Tone.FMSynth().toMaster(),
+    java:   new Tone.FMSynth().toMaster(),
+    elixir: new Tone.FMSynth().toMaster(),
+    c: new Tone.FMSynth().toMaster(),
+    other: new Tone.FMSynth().toMaster(),
   }
 ];
 
-const groupConfigs = [
-  {
-    javascript:  {
-      countDivision: 5,
-      noteLength:    '64n',
-      quantizeTo:    '8n',
-    },
-    python:  {
-      countDivision: 5,
-      noteLength:    '64n',
-      quantizeTo:    '8n',
-      offset:        '16n',
-    },
+const groupConfigs = {
+  javascript:  {
+    countDivision: 5,
+    noteLength:    '64n',
+    quantizeTo:    '8n',
   },
-  {
+  python:  {
+    countDivision: 5,
+    noteLength:    '64n',
+    quantizeTo:    '8n',
+    offset:        '16n',
   },
-  {
-    java: {
-      countDivision: 4,
-      noteLength:    '32n',
-      quantizeTo:    '1:0',
-    },
-    c: {
-      countDivision: 1,
-      noteLength:    '8n',
-      quantizeTo:    '1:0',
-    }
+  csharp: {
+    offset: '8n'
   },
-];
+  ruby: {
+    startMuted: true,
+  },
+  java: {
+    countDivision: 4,
+    noteLength:    '32n',
+    quantizeTo:    '1:0',
+  },
+  elixir: {
+    countDivision: 1,
+    noteLength:    '32n',
+    quantizeTo:    '0:2',
+  },
+};
 
 class SeqeuenceCanvas extends Component {
   makeBarGrid() {
@@ -156,6 +164,7 @@ class PlatformSequence extends Component {
     super();
 
     this.state = {
+      isMuted:       false,
       playheadShown: false,
       playlist:      [],
     };
@@ -167,6 +176,7 @@ class PlatformSequence extends Component {
 
     this.playingNotes = 0;
 
+    this.mute = this.mute.bind(this);
     this.setPlayhead = this.setPlayhead.bind(this);
     this.processEvents = this.processEvents.bind(this);
     this.noteStart = this.noteStart.bind(this);
@@ -175,6 +185,8 @@ class PlatformSequence extends Component {
   }
 
   componentDidMount() {
+    this.setState({ muted: this.props.startMuted });
+
     const start = this.props.sequenceSize
 
     // Schedule repeating event sampling for this platform
@@ -205,6 +217,9 @@ class PlatformSequence extends Component {
     // [1]: Quanitze error timestamps
     entries = entries.map(e => e.quantize(this.props.quantizeTo))
 
+    // Remove any entires that fall *outside* of the next sequence
+    entries = entries.filter(e => e < this.props.sequenceSize)
+
     // [2]: Group timestamps based on overlap
     const groups = Object.values(lodash.groupBy(entries, e => e.toSeconds()))
 
@@ -234,7 +249,6 @@ class PlatformSequence extends Component {
     // Schedule notes to be played
     entries.forEach(n => {
       const note = `${scale[n.scaleIndex]}${this.props.instrumentIndex}`;
-
       this.props.synth.triggerAttackRelease(note, n.length, n.time);
     });
 
@@ -279,8 +293,16 @@ class PlatformSequence extends Component {
     });
   }
 
+  mute() {
+    const muted = !this.state.muted
+    this.setState({ muted });
+    this.props.synth.volume.value = muted ? -100 : 0;
+  }
+
   render() {
-    return <li className="platform">
+    return <li
+      className={classNames('platform', { muted: this.state.muted })}
+      onClick={this.mute}>
       <span className={classNames('platform-icon', this.props.platform)} />
       <span className="note-indicator" ref={n => this.noteIndicator = n} />
       <div className="sequence-timeline" ref={n => this.timeline = n}>
@@ -383,7 +405,7 @@ class App extends Component {
       </li>;
 
       const sequencers = items.map((p, j) => <PlatformSequence key={p}
-        { ...groupConfigs[i][p] }
+        { ...groupConfigs[p] }
         synth={synthBank[i][p]}
         instrumentIndex={j + 2}
         sequenceSize={this.state.globalSequenceSize}

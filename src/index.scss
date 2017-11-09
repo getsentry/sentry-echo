@@ -91,6 +91,11 @@ header {
 .platform {
     display: flex;
     width: 800px;
+    transition: opacity 500ms, filter 500ms;
+
+    &.muted {
+        opacity: 0.2;
+    }
 }
 
 .instrument-heading {
