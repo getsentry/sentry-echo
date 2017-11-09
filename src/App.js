@@ -39,14 +39,15 @@ const instrumentGroups = [
   'Bass Line',
 ];
 
+const scale = [ 'C', 'D', 'E', 'F', 'G', 'A', 'B' ];
+
 const defaultGrouping = [
   [ 'javascript', 'node', 'python', 'ruby' ],
-  [ 'csharp', 'elixir', 'go', 'php' ],
+  [ 'go', 'csharp', 'elixir', 'php' ],
   [ 'java', 'objc', 'c', 'other' ],
 ];
 
 class SeqeuenceCanvas extends Component {
-
   makeBarGrid() {
     const widthPerBar = new Tone.Time('1:0:0')
       .div(this.props.sequenceSize)
@@ -62,19 +63,53 @@ class SeqeuenceCanvas extends Component {
       y2={this.props.height} />);
   }
 
+  makeNote(note) {
+    const paddingX = 1;
+    const paddingY = 2;
+
+    const height = (this.props.height / scale.length) - (paddingY * 2);
+    const rawWidth = note.length.clone()
+      .div(this.props.sequenceSize)
+      .mult(this.props.width)
+      .toSeconds();
+
+    // Notes may play for a very short period of time, but at least give them a
+    // pixel representation
+    const width = Math.max(1, rawWidth);
+
+    const x = note.relTime.clone()
+      .div(this.props.sequenceSize)
+      .mult(this.props.width)
+      .toSeconds() + paddingX;
+
+    const y = Math.floor(note.scaleIndex * (this.props.height / scale.length)) + paddingY;
+
+    return <rect key={note.time.toSeconds()}
+      height={height}
+      width={width}
+      x={x}
+      y={y} />
+  }
+
+  makePlaylist() {
+    return this.props.playlist.map(n => this.makeNote(n));
+  }
 
   render() {
     return <svg width={this.props.width} height={this.props.height}>
       <g className="bar-lines">
         {this.makeBarGrid()}
       </g>
-
-
-
+      <g className="playlist">
+        {this.makePlaylist()}
+      </g>
     </svg>;
   }
 }
 
+SeqeuenceCanvas.defaultProps = {
+  playlist: [],
+};
 
 class PlatformSequence extends Component {
   constructor() {
@@ -83,14 +118,21 @@ class PlatformSequence extends Component {
     this.state = {
       sequenceSize:  new Tone.Time('4:0:0'),
       playheadShown: false,
-      playing:       false,
+
+      countDivision: 5,
+      noteLength:    '64n',
+      quantizeTo:    '8n',
     };
 
     this.timeline = null;
-    this.playhead = null
+    this.playhead = null;
+    this.playheadAnim = null
+    this.beatIndicator = null
 
-    this.movePlayhead = this.movePlayhead.bind(this);
+    this.setPlayhead = this.setPlayhead.bind(this);
     this.processEvents = this.processEvents.bind(this);
+    this.triggerNoteIndicator = this.triggerNoteIndicator.bind(this);
+    this.updatePlaylist = this.updatePlaylist.bind(this);
   }
 
   componentDidMount() {
@@ -101,9 +143,6 @@ class PlatformSequence extends Component {
   }
 
   processEvents(time) {
-    // Update the playhead animation
-    Tone.Draw.schedule(this.movePlayhead, time);
-
     // XXX: This isn't great that we're directly mutating this here, probably
     // would be nicer to keep doing things in a react-esq way in which case
     // this *should* be immutable, but whatever, it's a hackweek project.
@@ -115,35 +154,95 @@ class PlatformSequence extends Component {
     const earliestTime = entries[0];
     entries = entries.map(e => new Tone.Time((e - earliestTime) / 1000));
 
-    entries = entries.map(e => e.quantize('16n').toSeconds())
+    // We compute where the notes land on the grid by [1] quantizing them onto
+    // the grid based on the quantizeTo property, then determining how long the
+    // note should last by [2] taking the number of events quantized to the
+    // same time, [3] dividing that by the countDivision, and multiplying that
+    // by the noteLength property.
+    //
+    // [4] Notes are moved up and down the scale when they would otherwise
+    // overlap with another note before it's completed.
 
-    //console.log(entries)
-    //console.log('setting up fisrt event list')
+    // [1]: Quanitze error timestamps
+    entries = entries.map(e => e.quantize(this.state.quantizeTo))
+
+    // [2]: Group timestamps based on overlap
+    const groups = Object.values(lodash.groupBy(entries, e => e.toSeconds()))
+
+    // [3]: Offset the time and compute the note length
+    entries = groups.map(e => ({
+      relTime: e[0],
+      time:    e[0].clone().add(time),
+      length: new Tone.Time(e.length / this.state.countDivision).mult(this.state.noteLength),
+    }));
+
+    // Start at a random note. Maybe a good idea, maybe bad
+    let scaleIndex = Math.floor(Math.random() * (scale.length - 1));
+    entries[0].scaleIndex = scaleIndex;
+
+    // [4]: Move notes through the scale if notes overlap nessicary
+    for (let i = 1; i < entries.length; i++) {
+      const curr = entries[i];
+      const last = entries[i-1];
+
+      const dir = [-1, 1][Math.floor(Math.random() * 2)];
+
+      curr.scaleIndex = last.time.clone().add(last.length) > curr.time
+        ? scaleIndex = Math.abs(scaleIndex + dir) % scale.length
+        : scaleIndex;
+    }
+
+    // Schedule notes to be played
+//    entries.forEach(n => {
+//      const note = `${scale[n.scaleIndex]}${this.props.instrumentIndex}`;
+//      this.props.synth.triggerAttackRelease(note, n.time, n.length);
+//    });
+
+    // Schedule beat-indicator triggers for each note
+    entries.forEach(e => Tone.Draw.schedule(this.triggerNoteIndicator, e.time))
+
+    // Schedule redrawing of the sequence grid and playhead
+    Tone.Draw.schedule(_ => this.updatePlaylist(entries), time);
   }
 
-  movePlayhead() {
-    this.setState({ playheadShown: true, playing: true });
+  updatePlaylist(entries) {
+    this.setState({ playlist: entries });
+    this.setPlayhead();
+  }
 
-    this.playhead.style.transform = 'translateX(0)';
+  triggerNoteIndicator() {
+    this.noteIndicator.classList.remove('trigger');
+    setTimeout(_ => this.noteIndicator.classList.add('trigger'), 1);
+  }
 
-    const width = this.timeline.clientWidth;
-    anime({
+  setPlayhead() {
+    this.setState({ playheadShown: true });
+
+    if (this.playheadAnim !== null) {
+      this.playheadAnim.restart();
+      return
+    }
+
+    this.playheadAnim = anime({
       targets:    this.playhead,
       duration:   this.state.sequenceSize.toMilliseconds(),
-      translateX: width,
+      translateX: this.timeline.clientWidth,
       easing:     'linear',
     });
   }
 
   render() {
+    console.log('okay re-rendering')
+
     return <li className="platform">
       <span className={classNames('platform-icon', this.props.platform)} />
-      <span className="note-indicator" />
+      <span className="note-indicator" ref={n => this.noteIndicator = n} />
       <div className="sequence-timeline" ref={n => this.timeline = n}>
         <span
           className={classNames('playhead', { shown: this.state.playheadShown })}
           ref={n => this.playhead = n} />
         <SeqeuenceCanvas
+          playlist={this.state.playlist}
           sequenceSize={this.state.sequenceSize}
           width={734}
           height={48} />
@@ -163,6 +262,12 @@ const heading = <header>
   </p>
 </header>;
 
+const synthBank = [
+  new Tone.PluckSynth().toMaster(),
+  new Tone.MembraneSynth().toMaster(),
+  new Tone.AMSynth().toMaster(),
+]
+
 class App extends Component {
   constructor() {
     super()
@@ -170,7 +275,7 @@ class App extends Component {
     this.state = {
       globalSequenceSize: new Tone.Time('4:0:0'),
       ordering:           lodash.cloneDeep(defaultGrouping),
-      bpmDivider:         5,
+      bpmDivider:         6,
       currentBpm:         new Number(0),
       eventsPerSecond:    new Number(0),
     };
@@ -188,7 +293,9 @@ class App extends Component {
     const start = this.state.globalSequenceSize;
     Tone.Transport.schedule(t => Tone.Draw.schedule(this.starting, t), start);
 
-    new Tone.Loop(this.recomputeBpm, this.state.globalSequenceSize).start(start);
+    // The BPM should be updated *just* before any other updates are scheduled
+    const oneTickBack = start.clone().sub('1t')
+    new Tone.Loop(this.recomputeBpm, this.state.globalSequenceSize).start(oneTickBack);
   }
 
   processEvents(message) {
@@ -213,10 +320,10 @@ class App extends Component {
     const eventsPerSecond = eventCount / this.state.globalSequenceSize;
     const currentBpm = eventsPerSecond / this.state.bpmDivider;
 
-    this.setState({ eventsPerSecond, currentBpm });
+    Tone.Draw.schedule(_ => this.setState({ eventsPerSecond, currentBpm }), time);
 
     // Update the BPM of the transport at the precise time
-    Tone.Transport.bpm.setValueAtTime(currentBpm, time);
+    Tone.Transport.bpm.value = currentBpm;
   }
 
   render() {
@@ -225,7 +332,9 @@ class App extends Component {
         {instrumentGroups[i]}
       </li>;
 
-      const sequencers = items.map(p => <PlatformSequence key={p}
+      const sequencers = items.map((p, j) => <PlatformSequence key={p}
+        synth={synthBank[i]}
+        instrumentIndex={j}
         eventBuffer={this.eventBuffer}
         platform={p} />);
 

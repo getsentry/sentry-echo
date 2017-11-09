@@ -114,6 +114,15 @@ header {
     width: 4px;
     background: #353042;
     margin-left: 6px;
+    animation: none;
+
+    &.trigger {
+        animation: noteIndicatorTrigger 300ms;
+    }
+}
+
+@keyframes noteIndicatorTrigger {
+    20% { background: #E03E2F; }
 }
 
 .sequence-timeline {
@@ -131,6 +140,10 @@ header {
     .bar-lines line {
         stroke-width: 1px;
         stroke: #2a2140;
+    }
+
+    .playlist rect {
+        fill: #9990AB;
     }
 }
 
