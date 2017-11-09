@@ -186,6 +186,7 @@ class PlatformSequence extends Component {
 
   componentDidMount() {
     this.setState({ muted: this.props.startMuted });
+    this.props.synth.volume.value = this.props.startMuted ? -100 : 0;
 
     const start = this.props.sequenceSize
 
