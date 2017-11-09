@@ -107,21 +107,13 @@ class SeqeuenceCanvas extends Component {
   }
 }
 
-SeqeuenceCanvas.defaultProps = {
-  playlist: [],
-};
-
 class PlatformSequence extends Component {
   constructor() {
     super();
 
     this.state = {
-      sequenceSize:  new Tone.Time('4:0:0'),
       playheadShown: false,
-
-      countDivision: 5,
-      noteLength:    '64n',
-      quantizeTo:    '8n',
+      playlist:      [],
     };
 
     this.timeline = null;
@@ -136,10 +128,10 @@ class PlatformSequence extends Component {
   }
 
   componentDidMount() {
-    const start = this.state.sequenceSize
+    const start = this.props.sequenceSize
 
     // Schedule repeating event sampling for this platform
-    new Tone.Loop(this.processEvents, this.state.sequenceSize).start(start)
+    new Tone.Loop(this.processEvents, this.props.sequenceSize).start(start)
   }
 
   processEvents(time) {
@@ -164,7 +156,7 @@ class PlatformSequence extends Component {
     // overlap with another note before it's completed.
 
     // [1]: Quanitze error timestamps
-    entries = entries.map(e => e.quantize(this.state.quantizeTo))
+    entries = entries.map(e => e.quantize(this.props.quantizeTo))
 
     // [2]: Group timestamps based on overlap
     const groups = Object.values(lodash.groupBy(entries, e => e.toSeconds()))
@@ -173,7 +165,7 @@ class PlatformSequence extends Component {
     entries = groups.map(e => ({
       relTime: e[0],
       time:    e[0].clone().add(time),
-      length: new Tone.Time(e.length / this.state.countDivision).mult(this.state.noteLength),
+      length: new Tone.Time(e.length / this.props.countDivision).mult(this.props.noteLength),
     }));
 
     // Start at a random note. Maybe a good idea, maybe bad
@@ -243,12 +235,19 @@ class PlatformSequence extends Component {
           ref={n => this.playhead = n} />
         <SeqeuenceCanvas
           playlist={this.state.playlist}
-          sequenceSize={this.state.sequenceSize}
+          sequenceSize={this.props.sequenceSize}
           width={734}
           height={48} />
       </div>
     </li>;
   }
+}
+
+PlatformSequence.defaultProps = {
+  sequenceSize:  new Tone.Time('4:0:0'),
+  countDivision: 5,
+  noteLength:    '64n',
+  quantizeTo:    '2n',
 }
 
 const heading = <header>
