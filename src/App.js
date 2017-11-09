@@ -42,9 +42,53 @@ const instrumentGroups = [
 const scale = [ 'C', 'D', 'E', 'F', 'G', 'A', 'B' ];
 
 const defaultGrouping = [
-  [ 'javascript', 'node', 'python', 'ruby' ],
-  [ 'go', 'csharp', 'elixir', 'php' ],
-  [ 'java', 'objc', 'c', 'other' ],
+  [ 'javascript', 'python', ],
+  [ 'go', /* 'csharp', 'elixir' */ ],
+  [ 'java' , 'c', /* 'other' */ ],
+];
+
+const synthBank = [
+  {
+    javascript: new Tone.PluckSynth().toMaster(),
+    python: new Tone.PluckSynth().toMaster(),
+  },
+  {
+    go: new Tone.MembraneSynth().toMaster(),
+  },
+  {
+    java: new Tone.FMSynth().toMaster(),
+    c:    new Tone.FMSynth().toMaster(),
+  }
+];
+
+const groupConfigs = [
+  {
+    javascript:  {
+      countDivision: 5,
+      noteLength:    '64n',
+      quantizeTo:    '8n',
+    },
+    python:  {
+      countDivision: 5,
+      noteLength:    '64n',
+      quantizeTo:    '8n',
+      offset:        '16n',
+    },
+  },
+  {
+  },
+  {
+    java: {
+      countDivision: 4,
+      noteLength:    '32n',
+      quantizeTo:    '1:0',
+    },
+    c: {
+      countDivision: 1,
+      noteLength:    '8n',
+      quantizeTo:    '1:0',
+    }
+  },
 ];
 
 class SeqeuenceCanvas extends Component {
@@ -119,11 +163,14 @@ class PlatformSequence extends Component {
     this.timeline = null;
     this.playhead = null;
     this.playheadAnim = null
-    this.beatIndicator = null
+    this.noteIndicator = null
+
+    this.playingNotes = 0;
 
     this.setPlayhead = this.setPlayhead.bind(this);
     this.processEvents = this.processEvents.bind(this);
-    this.triggerNoteIndicator = this.triggerNoteIndicator.bind(this);
+    this.noteStart = this.noteStart.bind(this);
+    this.noteEnd = this.noteEnd.bind(this);
     this.updatePlaylist = this.updatePlaylist.bind(this);
   }
 
@@ -163,7 +210,7 @@ class PlatformSequence extends Component {
 
     // [3]: Offset the time and compute the note length
     entries = groups.map(e => ({
-      relTime: e[0],
+      relTime: e[0].add(this.props.offset),
       time:    e[0].clone().add(time),
       length: Tone.Time(e.length / this.props.countDivision).mult(this.props.noteLength),
     }));
@@ -185,13 +232,18 @@ class PlatformSequence extends Component {
     }
 
     // Schedule notes to be played
-//    entries.forEach(n => {
-//      const note = `${scale[n.scaleIndex]}${this.props.instrumentIndex}`;
-//      this.props.synth.triggerAttackRelease(note, n.time, n.length);
-//    });
+    entries.forEach(n => {
+      const note = `${scale[n.scaleIndex]}${this.props.instrumentIndex}`;
 
-    // Schedule beat-indicator triggers for each note
-    entries.forEach(e => Tone.Draw.schedule(this.triggerNoteIndicator, e.time))
+      this.props.synth.triggerAttackRelease(note, n.length, n.time);
+    });
+
+    // Schedule beat-indicator triggers for each note.
+    // TODO: This is sometimes a little bit buggy
+    entries.forEach(e => {
+      Tone.Draw.schedule(this.noteStart, e.time);
+      Tone.Draw.schedule(this.noteEnd, e.time.clone().add(e.length));
+    });
 
     // Schedule redrawing of the sequence grid and playhead
     Tone.Draw.schedule(_ => this.updatePlaylist(entries), time);
@@ -202,9 +254,15 @@ class PlatformSequence extends Component {
     this.setState({ playlist: entries });
   }
 
-  triggerNoteIndicator() {
-    this.noteIndicator.classList.remove('trigger');
-    setTimeout(_ => this.noteIndicator.classList.add('trigger'), 1);
+  noteStart() {
+    this.playingNotes++;
+    this.noteIndicator.classList.add('trigger');
+  }
+
+  noteEnd() {
+    if (this.playingNotes-- === 1) {
+      this.noteIndicator.classList.remove('trigger');
+    }
   }
 
   setPlayhead() {
@@ -240,10 +298,10 @@ class PlatformSequence extends Component {
 }
 
 PlatformSequence.defaultProps = {
-  sequenceSize:  Tone.Time('4:0:0'),
   countDivision: 5,
   noteLength:    '64n',
   quantizeTo:    '2n',
+  offset:        0,
 }
 
 const heading = <header>
@@ -325,8 +383,10 @@ class App extends Component {
       </li>;
 
       const sequencers = items.map((p, j) => <PlatformSequence key={p}
-        synth={synthBank[i]}
-        instrumentIndex={j}
+        { ...groupConfigs[i][p] }
+        synth={synthBank[i][p]}
+        instrumentIndex={j + 2}
+        sequenceSize={this.state.globalSequenceSize}
         eventBuffer={this.eventBuffer}
         platform={p} />);
 
