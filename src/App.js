@@ -5,6 +5,7 @@ import anime from 'animejs';
 import AnimatedNumber from 'react-animated-number';
 import lodash from 'lodash';
 import './index.scss';
+import howItWorks from './how-it-works.svg';
 
 let platforms = [
   'javascript',
@@ -335,6 +336,48 @@ PlatformSequence.defaultProps = {
   offset:        0,
 }
 
+class HelpPopover extends Component {
+  constructor() {
+    super();
+    this.state = { opened: false };
+  }
+
+  render() {
+    return <div className={classNames('help-popover', { opened: this.state.opened })}>
+      <span onClick={_ => this.setState({ opened: !this.state.opened })}>?</span>
+      <div className="popover">
+        <h1>What is this?</h1>
+        <p>
+          Sentry echo is a Winter 2017 hack-week project that sprung about from
+          wanting to play with the live data available through <a href="http://live.sentry.io">live.sentry.io</a>.  Echo generates
+          music using the live stream of errors collected by sentry, placing
+          notes onto a sequence using the error timestamp and it's platform.
+        </p>
+        <p>
+          Sentry echo was created by Evan Purkhiser.
+        </p>
+
+        <h1>How does it work?</h1>
+        <p>
+          Errors are collected over the HTTP Message Stream <a
+          href="http://live.sentry.io:7000">live.sentry.io:7000</a> and buffered into
+          platform groups. We then sequence the errors collected over a 4
+          musical bar period onto a scale. We then do some manipulations based
+          on the timestamp of the event to algin them onto the sequence.
+        </p>
+        <p>
+          <img src={howItWorks} />
+        </p>
+        <p>
+          The BPM for each sequence is computed by taking the total number of
+          errors collected during that period, comuputing the rate of errors
+          per second, and dividing that by a constant to get a sane BPM.
+        </p>
+      </div>
+    </div>;
+  }
+}
+
 const heading = <header>
   <div className="logo">
     <h1>Sentry</h1>
@@ -345,8 +388,6 @@ const heading = <header>
     world. Hear the sound of errors — Powered by sentry.io
   </p>
 </header>;
-
-let herpDerp = 0;
 
 class App extends Component {
   constructor() {
@@ -449,6 +490,7 @@ class App extends Component {
 
     return <div id="sentry_echo">
       {heading}
+      <HelpPopover />
       <div className="main-app">
         {loader}
         {bpmIndicator}

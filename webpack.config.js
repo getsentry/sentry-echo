@@ -27,17 +27,6 @@ module.exports = {
       use:  [ 'style-loader', 'css-loader', 'sass-loader' ],
     },
     {
-      test:    /\.svg$/,
-      include: path.resolve('./icons'),
-      use: [{
-        loader:  'svg-sprite-loader',
-        options: { spriteFilename: 'sprite.[hash].svg', esModule: false },
-      },
-      {
-        loader: 'svgo-loader',
-      }],
-    },
-    {
       test:   /\.(eot|woff|woff2|ttf|svg|png|jpe?g|gif)(\?\S*)?$/,
       loader: 'file-loader',
     }],

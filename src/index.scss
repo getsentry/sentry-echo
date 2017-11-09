@@ -21,6 +21,16 @@ body {
     font-weight: 300;
 }
 
+a {
+    color: #6C5FC7;
+    text-decoration: none;
+    transition: color 300ms;
+
+    &:hover {
+        color: #423B87;
+    }
+}
+
 #sentry_echo {
     display: flex;
     flex-direction: column;
@@ -75,7 +85,7 @@ header {
     flex-grow: 1;
     display: flex;
     justify-content: center;
-    padding-top: 80px;
+    padding: 80px 0;
 }
 
 .sequencers {
@@ -251,4 +261,82 @@ header {
     0%   { opacity: 0; }
     60%  { opacity: 0; }
     100% { opacity: 1; }
+}
+
+.help-popover {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    .popover {
+        width: 600px;
+        padding: 40px;
+        background: #fff;
+        color: #342C3E;
+        z-index: 10;
+        position: relative;
+        border-radius: 4px;
+        top: 90px;
+        right: 18px;
+        font-size: 0.9rem;
+        line-height: 1.5rem;
+
+        box-shadow: 0 50px 100px rgba(50,50,93,.1), 0 15px 35px rgba(50,50,93,.15), 0 5px 15px rgba(0,0,0,.1);
+        pointer-events: none;
+        transform: rotate3d(1,1,0,15deg);
+        transform-origin: 100% 0;
+        opacity: 0;
+        will-change: transform,opacity;
+        transition-property: transform,opacity;
+        transition-duration: .25s;
+
+        &:after {
+            display: block;
+            content: '';
+            border: 10px solid transparent;
+            border-bottom-color: #fff;
+            height: 0;
+            width: 0;
+            position: absolute;
+            top: -20px;
+            right: 24px;
+        }
+    }
+
+    h1 {
+        margin: 8px 0;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+
+    }
+
+    span {
+        position: absolute;
+        top: 40px;
+        right: 40px;
+        line-height: 23px;
+        width: 25px;
+        display: block;
+        border-radius: 50%;
+        text-align: center;
+        font-weight: 100;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.9rem;
+        padding-top: 2px;
+        cursor: pointer;
+        transition: background 300ms, color 300ms;
+
+    }
+
+    span:hover, &.opened span {
+        background: #fff;
+        color: #a69db9;
+    }
+
+    &.opened .popover {
+        transform: none;
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
