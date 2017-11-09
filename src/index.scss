@@ -144,6 +144,24 @@ header {
 
     .playlist rect {
         fill: #9990AB;
+        opacity: 0;
+        transform: translateX(8px);
+        animation: showNote 400ms;
+        animation-fill-mode: forwards;
+    }
+}
+
+@for $i from 1 through 32 {
+    .sequence-timeline svg .playlist rect:nth-child(#{$i}) {
+        animation-delay: ceil($i / 2) * 90ms;
+    }
+}
+
+@keyframes showNote {
+    60%  { opacity: 1; }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 
