@@ -99,6 +99,7 @@ header {
     font-size: 0.8rem;
     align-items: center;
     padding: 4px 0;
+    user-select: none;
 
     &:after {
         content: '';
@@ -148,7 +149,42 @@ header {
     }
 }
 
-.waiting-sequence {
+.bpm-indicator {
+    position: absolute;
+    top: 10px;
+    font-weight: normal;
+    font-size: 1.2rem;
+    line-height: 1.2rem;
+    text-align: center;
+    color: #F58159;
+    transition: opacity 600ms, transform 600ms;
+
+    opacity: 0;
+    transform: translateY(47px);
+    pointer-events: none;
+
+    &.ready {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    small, div {
+        color: #fff;
+        font-weight: 100;
+    }
+
+    small {
+        font-size: 0.65rem;
+        margin-left: 2px;
+    }
+
+    div {
+        font-size: 0.8rem;
+        opacity: 0.6;
+    }
+}
+
+.loading-sequence {
     position: absolute;
     top: 20px;
     background: #E03E2F;
@@ -156,6 +192,12 @@ header {
     padding: 5px 10px;
     border-radius: 3px;
     animation: waitNotify 1s;
+    transition: opacity 600ms;
+
+    &.ready {
+        opacity: 0;
+        pointer-events: none;
+    }
 }
 
 @keyframes waitNotify {

@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.scss';
 import App from './App';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+import './index.scss';
+
+const stream = new EventSource("https://live.sentry.io:7000")
+
+ReactDOM.render(<App eventStream={stream} />, document.getElementById('root'));
