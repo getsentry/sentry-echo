@@ -71,7 +71,7 @@ class PlatformSequence extends Component {
 
   processEvents(time) {
     // Update the playhead animation
-    this.movePlayhead()
+    Tone.Draw.schedule(this.movePlayhead, time);
 
     // XXX: This isn't great that we're directly mutating this here, probably
     // would be nicer to keep doing things in a react-esq way in which case
