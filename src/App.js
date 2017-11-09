@@ -42,7 +42,7 @@ const instrumentGroups = [
 const scale = [ 'C', 'D', 'E', 'F', 'G', 'A', 'B' ];
 
 const defaultGrouping = [
-  [ 'javascript', 'python', 'node',  ],
+  [ 'javascript', 'python', 'node',  'php' ],
   [ 'go', 'csharp', 'ruby' ],
   [ 'java' , 'elixir', 'c', 'other' ],
 ];
@@ -55,6 +55,7 @@ const synthBank = [
     javascript: new Tone.PluckSynth().toMaster(),
     python: new Tone.PluckSynth().toMaster(),
     node: new Tone.PluckSynth().toMaster(),
+    php: new Tone.PluckSynth().toMaster(),
   },
   {
     go: new Tone.MembraneSynth().toMaster(),
@@ -80,6 +81,13 @@ const groupConfigs = {
     noteLength:    '64n',
     quantizeTo:    '8n',
     offset:        '16n',
+  },
+  php:  {
+    countDivision: 6,
+    noteLength:    '16n',
+    quantizeTo:    '4n',
+    offset:        '14n',
+    startMuted:    true,
   },
   csharp: {
     offset: '8n'
