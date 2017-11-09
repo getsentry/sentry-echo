@@ -124,6 +124,16 @@ header {
     flex-grow: 1;
 }
 
+.sequence-timeline svg {
+    display: block;
+    shape-rendering: crispEdges;
+
+    .bar-lines line {
+        stroke-width: 1px;
+        stroke: #2a2140;
+    }
+}
+
 .playhead {
     position: absolute;
     top: 0;
@@ -132,7 +142,8 @@ header {
     border-right: 1px solid #6C5FC7;
     transform: translateX(0);
     opacity: 0;
-    transition: opacity 300ms;
+    transition: opacity 100ms;
+    z-index: 2;
 
     &:before {
         content: '';

@@ -45,6 +45,37 @@ const defaultGrouping = [
   [ 'java', 'objc', 'c', 'other' ],
 ];
 
+class SeqeuenceCanvas extends Component {
+
+  makeBarGrid() {
+    const widthPerBar = new Tone.Time('1:0:0')
+      .div(this.props.sequenceSize)
+      .mult(this.props.width)
+      .toSeconds();
+
+    const totalBars = Math.floor(this.props.width / widthPerBar)
+
+    return lodash.times(totalBars, i => <line key={i}
+      x1={Math.floor(widthPerBar * (i + 1))}
+      x2={Math.floor(widthPerBar * (i + 1))}
+      y1={0}
+      y2={this.props.height} />);
+  }
+
+
+  render() {
+    return <svg width={this.props.width} height={this.props.height}>
+      <g className="bar-lines">
+        {this.makeBarGrid()}
+      </g>
+
+
+
+    </svg>;
+  }
+}
+
+
 class PlatformSequence extends Component {
   constructor() {
     super();
@@ -112,9 +143,10 @@ class PlatformSequence extends Component {
         <span
           className={classNames('playhead', { shown: this.state.playheadShown })}
           ref={n => this.playhead = n} />
-
-
-
+        <SeqeuenceCanvas
+          sequenceSize={this.state.sequenceSize}
+          width={734}
+          height={48} />
       </div>
     </li>;
   }
