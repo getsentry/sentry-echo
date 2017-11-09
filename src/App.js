@@ -49,7 +49,7 @@ const defaultGrouping = [
 
 class SeqeuenceCanvas extends Component {
   makeBarGrid() {
-    const widthPerBar = new Tone.Time('1:0:0')
+    const widthPerBar = Tone.Time('1:0:0')
       .div(this.props.sequenceSize)
       .mult(this.props.width)
       .toSeconds();
@@ -131,7 +131,7 @@ class PlatformSequence extends Component {
     const start = this.props.sequenceSize
 
     // Schedule repeating event sampling for this platform
-    new Tone.Loop(this.processEvents, this.props.sequenceSize).start(start)
+    new Tone.Loop(this.processEvents, this.props.sequenceSize).start(start);
   }
 
   processEvents(time) {
@@ -144,7 +144,7 @@ class PlatformSequence extends Component {
     // Normalize entry timestamps to seconds starting relative to the start of
     // the upcoming sequence.
     const earliestTime = entries[0];
-    entries = entries.map(e => new Tone.Time((e - earliestTime) / 1000));
+    entries = entries.map(e => Tone.Time((e - earliestTime) / 1000));
 
     // We compute where the notes land on the grid by [1] quantizing them onto
     // the grid based on the quantizeTo property, then determining how long the
@@ -165,7 +165,7 @@ class PlatformSequence extends Component {
     entries = groups.map(e => ({
       relTime: e[0],
       time:    e[0].clone().add(time),
-      length: new Tone.Time(e.length / this.props.countDivision).mult(this.props.noteLength),
+      length: Tone.Time(e.length / this.props.countDivision).mult(this.props.noteLength),
     }));
 
     // Start at a random note. Maybe a good idea, maybe bad
@@ -195,11 +195,11 @@ class PlatformSequence extends Component {
 
     // Schedule redrawing of the sequence grid and playhead
     Tone.Draw.schedule(_ => this.updatePlaylist(entries), time);
+    Tone.Draw.schedule(this.setPlayhead, time);
   }
 
   updatePlaylist(entries) {
     this.setState({ playlist: entries });
-    this.setPlayhead();
   }
 
   triggerNoteIndicator() {
@@ -210,22 +210,18 @@ class PlatformSequence extends Component {
   setPlayhead() {
     this.setState({ playheadShown: true });
 
-    if (this.playheadAnim !== null) {
-      this.playheadAnim.restart();
-      return
-    }
+    anime.remove(this.playhead);
+    this.playhead.style.transform = 'translateX(0)';
 
     this.playheadAnim = anime({
       targets:    this.playhead,
-      duration:   this.state.sequenceSize.toMilliseconds(),
+      duration:   this.props.sequenceSize.toMilliseconds(),
       translateX: this.timeline.clientWidth,
       easing:     'linear',
     });
   }
 
   render() {
-    console.log('okay re-rendering')
-
     return <li className="platform">
       <span className={classNames('platform-icon', this.props.platform)} />
       <span className="note-indicator" ref={n => this.noteIndicator = n} />
@@ -244,7 +240,7 @@ class PlatformSequence extends Component {
 }
 
 PlatformSequence.defaultProps = {
-  sequenceSize:  new Tone.Time('4:0:0'),
+  sequenceSize:  Tone.Time('4:0:0'),
   countDivision: 5,
   noteLength:    '64n',
   quantizeTo:    '2n',
@@ -261,19 +257,16 @@ const heading = <header>
   </p>
 </header>;
 
-const synthBank = [
-  new Tone.PluckSynth().toMaster(),
-  new Tone.MembraneSynth().toMaster(),
-  new Tone.AMSynth().toMaster(),
-]
+let herpDerp = 0;
 
 class App extends Component {
   constructor() {
     super()
 
     this.state = {
-      globalSequenceSize: new Tone.Time('4:0:0'),
+      globalSequenceSize: Tone.Time('4:0:0'),
       ordering:           lodash.cloneDeep(defaultGrouping),
+
       bpmDivider:         6,
       currentBpm:         new Number(0),
       eventsPerSecond:    new Number(0),
@@ -290,10 +283,10 @@ class App extends Component {
     this.props.eventStream.onmessage = this.processEvents.bind(this);
 
     const start = this.state.globalSequenceSize;
-    Tone.Transport.schedule(t => Tone.Draw.schedule(this.starting, t), start);
+    Tone.Transport.scheduleOnce(t => Tone.Draw.schedule(this.starting, t), start);
 
     // The BPM should be updated *just* before any other updates are scheduled
-    const oneTickBack = start.clone().sub('1t')
+    const oneTickBack = start.clone().sub('1i')
     new Tone.Loop(this.recomputeBpm, this.state.globalSequenceSize).start(oneTickBack);
   }
 
