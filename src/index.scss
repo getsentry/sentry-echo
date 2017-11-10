@@ -339,4 +339,8 @@ header {
         opacity: 1;
         pointer-events: auto;
     }
+
+    p::selection {
+        background: #d1cbe6;
+    }
 }
