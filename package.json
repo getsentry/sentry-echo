@@ -39,6 +39,6 @@
   "scripts": {
     "build": "webpack -p",
     "server": "webpack-dev-server --watch",
-    "deploy": "gh-pages -d dist"
+    "deploy": "echo 'echo.getsentry.net' > ./dist/CNAME && gh-pages -d dist"
   }
 }
