@@ -267,6 +267,7 @@ header {
     position: absolute;
     top: 0;
     right: 0;
+    height: 0;
 
     .popover {
         width: 600px;
@@ -326,7 +327,6 @@ header {
         padding-top: 2px;
         cursor: pointer;
         transition: background 300ms, color 300ms;
-
     }
 
     span:hover, &.opened span {

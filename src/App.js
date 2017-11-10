@@ -342,8 +342,18 @@ class HelpPopover extends Component {
     this.state = { opened: false };
   }
 
+  componentDidMount() {
+    document.addEventListener('click', e => {
+      if (!this.popover.contains(e.target)) {
+        this.setState({ opened: false });
+      }
+    });
+  }
+
   render() {
-    return <div className={classNames('help-popover', { opened: this.state.opened })}>
+    return <div
+      className={classNames('help-popover', { opened: this.state.opened })}
+      ref={n => this.popover = n}>
       <span onClick={_ => this.setState({ opened: !this.state.opened })}>?</span>
       <div className="popover">
         <h1>What is this?</h1>
