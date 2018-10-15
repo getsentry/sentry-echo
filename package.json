@@ -6,15 +6,16 @@
     "animejs": "^2.2.0",
     "classnames": "^2.2.5",
     "geolib": "^2.0.24",
-    "gh-pages": "^1.0.0",
-    "lodash": "^4.17.4",
+    "gh-pages": "^1.2.0",
+    "lodash": "^4.17.5",
     "platformicons": "^0.1.1",
     "react": "^16.0.0",
     "react-animated-number": "^0.4.3",
-    "react-dom": "^16.0.0",
+    "react-dom": "^16.0.1",
     "react-scripts": "1.0.17",
     "tone": "^0.11.11",
-    "typeface-rubik": "^0.0.43"
+    "typeface-rubik": "^0.0.43",
+    "snyk": "^1.103.4"
   },
   "devDependencies": {
     "babel-core": "^6.18.2",
@@ -39,6 +40,9 @@
   "scripts": {
     "build": "webpack -p",
     "server": "webpack-dev-server --watch",
-    "deploy": "echo 'echo.getsentry.net' > ./dist/CNAME && gh-pages -d dist"
-  }
+    "deploy": "echo 'echo.getsentry.net' > ./dist/CNAME && gh-pages -d dist",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "snyk": true
 }
