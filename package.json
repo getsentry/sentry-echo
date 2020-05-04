@@ -14,7 +14,8 @@
     "react-dom": "^16.0.0",
     "react-scripts": "1.0.17",
     "tone": "^0.11.11",
-    "typeface-rubik": "^0.0.43"
+    "typeface-rubik": "^0.0.43",
+    "snyk": "^1.317.0"
   },
   "devDependencies": {
     "babel-core": "^6.18.2",
@@ -39,6 +40,9 @@
   "scripts": {
     "build": "webpack -p",
     "server": "webpack-dev-server --watch",
-    "deploy": "echo 'echo.getsentry.net' > ./dist/CNAME && gh-pages -d dist"
-  }
+    "deploy": "echo 'echo.getsentry.net' > ./dist/CNAME && gh-pages -d dist",
+    "snyk-protect": "snyk protect",
+    "prepare": "yarn run snyk-protect"
+  },
+  "snyk": true
 }
