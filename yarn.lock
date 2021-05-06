@@ -7166,8 +7166,8 @@ typeface-rubik@^0.0.43:
   resolved "https://registry.yarnpkg.com/typeface-rubik/-/typeface-rubik-0.0.43.tgz#5d675b6739217b5a764a4a746271a9efb1a4ec90"
 
 ua-parser-js@^0.7.9:
-  version "0.7.17"
-  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.17.tgz#e9ec5f9498b9ec910e7ae3ac626a805c4d09ecac"
+  version "0.7.28"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.28.tgz#8ba04e653f35ce210239c64661685bf9121dec31"
 
 uglify-js@3.1.x, uglify-js@^3.0.13:
   version "3.1.8"
