@@ -7,7 +7,7 @@
     "classnames": "^2.2.5",
     "geolib": "^2.0.24",
     "gh-pages": "^1.0.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.12",
     "platformicons": "^0.1.1",
     "react": "^16.0.0",
     "react-animated-number": "^0.4.3",
